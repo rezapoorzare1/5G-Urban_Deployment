@@ -1,28 +1,10 @@
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
-*   Copyright (c) 2011 Centre Tecnologic de Telecomunicacions de Catalunya (CTTC)
-*   Copyright (c) 2015, NYU WIRELESS, Tandon School of Engineering, New York University
-*
-*   This program is free software; you can redistribute it and/or modify
-*   it under the terms of the GNU General Public License version 2 as
-*   published by the Free Software Foundation;
-*
-*   This program is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU General Public License for more details.
-*
-*   You should have received a copy of the GNU General Public License
-*   along with this program; if not, write to the Free Software
-*   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*   Author: Marco Miozzo <marco.miozzo@cttc.es>
-*           Nicola Baldo  <nbaldo@cttc.es>
-*
-*   Modified by: Marco Mezzavilla < mezzavilla@nyu.edu>
-*                         Sourjya Dutta <sdutta@nyu.edu>
-*                         Russell Ford <russell.ford@nyu.edu>
-*                         Menglei Zhang <menglei@nyu.edu>
+
+Author:Reza Poorzare <reza.poorzare@upc.edu>
+
+Supervisor: Anna Calveras<anna.calveras@upc.edu>
+
 */
 
 
@@ -65,8 +47,10 @@ NS_LOG_COMPONENT_DEFINE ("mmWaveTCPExample");
 using namespace ns3;
 using namespace mmwave;
 
-Ptr<PacketSink> sink;                 
-uint64_t lastTotalRx = 0;             Ptr<RateErrorModel> em;
+Ptr<PacketSink> sink;                
+uint64_t lastTotalRx = 0;             
+
+Ptr<RateErrorModel> em;
 
 PointToPointHelper p2ph;
 
@@ -75,11 +59,14 @@ PointToPointHelper p2ph;
 Ptr<OutputStreamWrapper> stream5 = asciiTraceHelper1.CreateFileStream ("throughput.txt");
 
 
+
 void
 CalculateThroughput ()
 {
-  Time now = Simulator::Now ();                                         /* Return the simulator's virtual time. */
-  double cur = (sink->GetTotalRx () - lastTotalRx) * (double) 8 / 1e5;     /* Convert Application RX Packets to MBits. */
+  Time now = Simulator::Now ();                                       
+
+  double cur = (sink->GetTotalRx () - lastTotalRx) * (double) 8 / 1e5;     
+
   std::cout << now.GetSeconds () << "s: \t" << cur << " Mbit/s" << std::endl;
 
 
@@ -98,8 +85,6 @@ std::ostream *stream = stream5->GetStream ();
   Simulator::Schedule (MilliSeconds (100), &CalculateThroughput);
   
 }
-
-
 
 
 class MyAppTag : public Tag
@@ -292,7 +277,8 @@ RxDrop (Ptr<PcapFileWrapper> file, Ptr<const Packet> p)
 {
   NS_LOG_UNCOND ("RxDrop at " << Simulator::Now ().GetSeconds ());
   file->Write (Simulator::Now (), p);
-//the contents of the packet beingdropped to the PCAP file
+
+
 }
 
 
@@ -308,7 +294,8 @@ RxDrop1 (Ptr<PcapFileWrapper> file, Ptr<const Packet> p)
 {
   NS_LOG_UNCOND ("UE0 RxDrop at " << Simulator::Now ().GetSeconds ());
   file->Write (Simulator::Now (), p);
-//the contents of the packet beingdropped to the PCAP file
+
+
 }
 
 
@@ -319,8 +306,11 @@ RxDrop2 (Ptr<PcapFileWrapper> file, Ptr<const Packet> p)
 {
   NS_LOG_UNCOND ("UE0 RxDrop at " << Simulator::Now ().GetSeconds ());
   file->Write (Simulator::Now (), p);
-//the contents of the packet beingdropped to the PCAP file
+
+
 }
+
+
 
 
 
@@ -333,7 +323,8 @@ DevicePacketsInQueueTrace (uint32_t oldValue, uint32_t newValue)
 }
 
 
-//TC:Trafic Control
+
+
 void
 TcPacketsInQueueTrace (uint32_t oldValue, uint32_t newValue)
 {
@@ -394,8 +385,6 @@ congestionstate (Ptr<OutputStreamWrapper> stream,  TcpSocketState::TcpCongState_
 
 //*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldvalue << "\t" << newvalue << std::endl;;
 }
-
-
 
 
 
@@ -480,7 +469,8 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
 
   Ptr<MmWaveHelper> mmwaveHelper = CreateObject<MmWaveHelper> ();
 
-  mmwaveHelper->SetAttribute ("PathlossModel", StringValue ("ns3::BuildingsObstaclePropagationLossModel
+  mmwaveHelper->SetAttribute ("PathlossModel", StringValue ("ns3::BuildingsObstaclePropagationLossModel"));
+
   mmwaveHelper->Initialize ();
   mmwaveHelper->SetHarqEnabled (true);
 
@@ -498,6 +488,8 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
 
   Ptr<Node> pgw = epcHelper->GetPgwNode ();
 
+
+
    em = CreateObject<RateErrorModel> ();
    em->SetAttribute ("ErrorRate", DoubleValue (0));
 
@@ -506,21 +498,24 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
   NodeContainer remoteHostContainer;
   remoteHostContainer.Create (1);
   Ptr<Node> remoteHost = remoteHostContainer.Get (0);
+
   InternetStackHelper internet;
   internet.Install (remoteHostContainer);
 
 
-//Config::SetDefault ("ns3::PfifoFastQueueDisc::MaxSize",QueueSizeValue (QueueSize ("1000p")));
                      
+
+
   TrafficControlHelper tchPfifo;
   tchPfifo.SetRootQueueDisc ("ns3::PfifoFastQueueDisc");
+
 
   TrafficControlHelper tchCoDel;
   tchCoDel.SetRootQueueDisc ("ns3::CoDelQueueDisc");
 
 
 
-  // Create the Internet
+
  
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
@@ -529,7 +524,8 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
   internetDevices.Get (0)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
 
   QueueDiscContainer qdiscs=tchPfifo.Install(internetDevices);
-//src/utils/queue.cc
+
+
   Ptr<QueueDisc> q = qdiscs.Get (1);
   q->TraceConnectWithoutContext ("BytesInQueue", MakeCallback (&TcPacketsInQueueTrace));
 
@@ -538,6 +534,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
+
   Ipv4Address remoteHostAddr;
   remoteHostAddr = internetIpIfaces.GetAddress (1);
   Ipv4StaticRoutingHelper ipv4RoutingHelper;
@@ -550,7 +547,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
     {
     case 1:
       {
-// 1.1. A small obstacle.
+
         Ptr < Building > building;
         building = Create<Building> ();
         building->SetBoundaries (Box (10,12,
@@ -558,7 +555,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
                                       0.0, 1.5));
 
 
-// 1.2. A small obstacle.
+
         Ptr < Building > building1;
         building1 = Create<Building> ();
         building1->SetBoundaries (Box (20.0,22.0,
@@ -566,14 +563,14 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
                                       0.0, 1.5));
 
 
-// 1.3. A big obstacle.
+
         Ptr < Building > building2;
         building2 = Create<Building> ();
         building2->SetBoundaries (Box (15.0,25.0,
                                       12.0, 14,
                                       0.0, 15.0));
 
-//15 meters ==> a building.
+
 
         break;
       }
@@ -581,7 +578,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
       {
 
 
-// 2.1. A small obstacle.
+
         Ptr < Building > building1;
         building1 = Create<Building> ();
         building1->SetBoundaries (Box (10,12,
@@ -589,9 +586,9 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
                                       0.0, 1.5));
 
 
-//1.5 meters ==> a human or a tree.
 
-// 2.2. A small obstacle.
+
+
         Ptr < Building > building2;
         building2 = Create<Building> ();
         building2->SetBoundaries (Box (20.0,22.0,
@@ -600,7 +597,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
 
 
 
-// 2.3. A small obstacle.
+
 
         Ptr < Building > building3;
         building3 = Create<Building> ();
@@ -611,7 +608,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
 
 
 
-// 2.4. A small obstacle.
+
 
         Ptr < Building > building4;
         building4 = Create<Building> ();
@@ -622,7 +619,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
 
 
 
-// 2.5. An average obstacle.
+
 
         Ptr < Building > building5;
         building5 = Create<Building> ();
@@ -630,7 +627,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
                                        6.0, 8.0,
                                        0.0, 3.0));
 
-// 2.6. An average obstacle.
+
 
         Ptr < Building > building6;
         building6 = Create<Building> ();
@@ -643,17 +640,13 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
     case 3:
       {
 
-
-
-
-//3.1 The first tree.
         Ptr < Building > building1;
         building1 = Create<Building> ();
         building1->SetBoundaries (Box (49.0,49.5,
                                        2.2, 2.7,
                                        0.0, 10));
 
-//3.2 The second tree.
+
         Ptr < Building > building2;
         building2 = Create<Building> ();
         building2->SetBoundaries (Box (49.0,49.5,
@@ -661,7 +654,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
                                        0.0, 10));
 
 
-//3.3 The third tree.
+
         Ptr < Building > building3;
         building3 = Create<Building> ();
         building3->SetBoundaries (Box (49.0,49.5,
@@ -669,14 +662,14 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
                                        0.0, 10));
 
 
-//3.3 The fourth tree.
+
         Ptr < Building > building4;
         building4 = Create<Building> ();
         building4->SetBoundaries (Box (49.0,49.5,
                                        13.8, 14.3,
                                        0.0, 10));
 
-//3.4 The fifth tree.
+
         Ptr < Building > building5;
         building5 = Create<Building> ();
         building5->SetBoundaries (Box (49.0,49.5,
@@ -686,7 +679,7 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
 
 
 
-//3.1 The first building
+
         Ptr < Building > building10;
         building10 = Create<Building> ();
         building10->SetBoundaries (Box (34.0,40.5,
@@ -726,8 +719,11 @@ Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::G
   uemobility.SetMobilityModel ("ns3::ConstantVelocityMobilityModel");
   uemobility.Install (ueNodes);
 
+
   ueNodes.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (52, -0.2, 1.5));
+
   ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (Vector (0, 0, 0));
+
 
 
 
@@ -780,24 +776,27 @@ Simulator::Schedule (Seconds (60), &ChangeSpeed, ueNodes.Get (0), Vector (0, 0, 
   ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
 
 
+
 ApplicationContainer sinkApps;
 
   if (tcp)
     {
-      // Install and start applications on UEs and remote host (dar Ferestande)
+
       uint16_t sinkPort = 20000;
 
       Address sinkAddress (InetSocketAddress (ueIpIface.GetAddress (0), sinkPort));
 
       PacketSinkHelper packetSinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
+
  packetSinkHelper.SetAttribute ("Protocol", TypeIdValue (TcpSocketFactory::GetTypeId ()));
        sinkApps = packetSinkHelper.Install (ueNodes.Get (0));
 sink = StaticCast<PacketSink> (sinkApps.Get (0));
 
       sinkApps.Start (Seconds (0.));
 
+
      Simulator::Schedule (Seconds (0), &CalculateThroughput);
-     //Simulator::Schedule (Seconds (0), &errorrate);
+
 
 
 
@@ -852,9 +851,10 @@ sink = StaticCast<PacketSink> (sinkApps.Get (0));
       app->SetStopTime (Seconds (stopTime));
     }
 
+
   else
     {
-      // Install and start applications on UEs and remote host
+
       uint16_t sinkPort = 20000;
 
       Address sinkAddress (InetSocketAddress (ueIpIface.GetAddress (0), sinkPort));
@@ -863,7 +863,7 @@ sink = StaticCast<PacketSink> (sinkApps.Get (0));
 
 
 
-//
+
     sink = StaticCast<PacketSink> (sinkApps.Get (0));
      
 
@@ -871,7 +871,7 @@ sink = StaticCast<PacketSink> (sinkApps.Get (0));
      sinkApps.Start (Seconds (0.));
 
 
-//
+
      Simulator::Schedule (Seconds (0), &CalculateThroughput);
 
 
@@ -894,7 +894,7 @@ sink = StaticCast<PacketSink> (sinkApps.Get (0));
     }
 
 
-  //p2ph.EnablePcapAll("mmwave-sgi-capture");
+
   BuildingsHelper::MakeMobilityModelConsistent ();
   Config::Set ("/NodeList/*/DeviceList/*/TxQueue/MaxSize", QueueSizeValue (QueueSize ("1000000p")));
 
@@ -972,4 +972,3 @@ Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmon.Ge
   return 0;
 
 }
-
